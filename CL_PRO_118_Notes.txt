@@ -1,0 +1,131 @@
+For me: reuse virtual environment of C117
+create virtual environment 
+
+pip install flask
+pip install tensorflow == 2.12.0 or 2.15.0
+installl w.r.t. user if required
+if tensorflow gives problems..uninstall and reinstall
+pip install tensorflow --user
+OR 
+This notes is available in class 110 that 2.5.0 works with python 3.9 or greater
+pip install 2.5.0 
+pip install tensorflow_cpu ==2.5.0
+
+CLass 118 PRO Digi diary 
+TA:
+model_prediction.py
+
+#Display entry
+def show_entry():
+    day_entry_list = pd.read_csv("./static/assets/data_files/data_entry.csv")
+
+    day_entry_list = day_entry_list.iloc[::-1]
+    
+    date1 = (day_entry_list['date'].values[0])
+    date2 =(day_entry_list['date'].values[1])
+    date3 = (day_entry_list['date'].values[2])
+
+    entry1 = day_entry_list['text'].values[0]
+    entry2 = day_entry_list['text'].values[1]
+    entry3 = day_entry_list['text'].values[2]
+
+    emotion1 = day_entry_list["emotion"].values[0]
+    emotion2 = day_entry_list["emotion"].values[1]
+    emotion3 = day_entry_list["emotion"].values[2]
+
+    emotion_url_1=""
+    emotion_url_2=""
+    emotion_url_3=""
+
+    for key, value in emo_code_url.items():
+        if key==emotion1:
+            emotion_url_1 = value[1]
+        if key==emotion2:
+            emotion_url_2 = value[1]
+        if key==emotion3:
+            emotion_url_3 = value[1]
+
+    return [
+        {
+            "date": date1,
+            "entry": entry1,
+            "emotion": emotion1,
+            "emotion_url": emotion_url_1
+        },
+        {
+            "date": date2,
+            "entry": entry2,
+            "emotion": emotion2,
+            "emotion_url": emotion_url_2
+        },
+        {
+            "date": date3,
+            "entry": entry3,
+            "emotion": emotion3,
+            "emotion_url": emotion_url_3
+        }
+    ]
+
+app.py..folder name is incorrect in original code ...
+ file_handler = open('./static/assets/data_files/data_entry.csv' , 'a')
+   
+def home():
+    entries = show_entry()
+    return render_template("index.html", entries=entries)
+
+SA activity :
+
+Note : index.js should be directly under static folder. Also check the path of it in index,html
+
+index.js  (html-> ajax-> flask) Save button clicked
+$("#save_button").click(function () {
+        save_data = {
+            "date": display_date,
+            "text": $("#text").val(),
+            "emotion": predicted_emotion
+        }
+        $.ajax({
+            type: 'POST',
+            url: "/save-entry",
+            data: JSON.stringify(save_data),
+            dataType: "json",
+            contentType: 'application/json',
+            success: function () {
+                alert("Your entry has been saved successfully!")
+                window.location.reload()
+            },
+            error: function (result) {
+                alert(result.responseJSON.message)
+            }
+        });
+
+    });
+
+
+
+app.py
+(Ajax to model prediction and backwards)
+# Save entry
+@app.route("/save-entry", methods=["POST"])
+def save_entry():
+
+    # Get Date, Predicted Emotion & Text Enter by the user to save the entry
+    date = request.json.get("date")           
+    emotion = request.json.get("emotion")
+    save_text = request.json.get("text")
+
+    save_text = save_text.replace("\n", " ")
+
+    # CSV Entry
+    entry = f'"{date}","{save_text}","{emotion}"\n'  
+
+    with open("./static/assets/data_files/data_entry.csv", "a") as f:
+        f.write(entry)
+    return jsonify("Success")
+           
+                
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+run app.py .. the address given shud be pasted in webpage and tested
